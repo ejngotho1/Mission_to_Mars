@@ -236,11 +236,14 @@ if __name__== "__main__":
     # If running as script, print scrapped data
     print(scrape_all())
     
-   ### The Mongo database is updated to contain the full-resolution image URL and title for each hemisphere image.
+### The Mongo database is updated to contain the full-resolution image URL and title for each hemisphere image.
 
 ##### Mongo works well with python and Flask
+
 ###### Flask is framework for developers that helps inbuildiing web apps
+
 ###### import dependencies/libraries
+
 from flask import Flask, render_template, redirect, url_for
 from flask_pymongo import PyMongo
 import scraping
@@ -250,14 +253,20 @@ app = Flask(__name__)
 
 
 #####lets tell python how to connect to mongo using PyMongo
+
 #####use flask_pymongo to set up mongo connection
+
 app.config["MONGO_URI"] = "mongodb://localhost:27017/mars_app"
 mongo = PyMongo(app)
 
 ##### next we set up Flask route
+
 ##### 1. for everyone to view when visiting the page--ourpage.com/
+
 ##### 2. one for scraping---ourpage.com/scrape
+
 ##### the routes will be embended in the webpage and accessed via links and buttons
+
 @app.route('/')
 def index():
     mars = mongo.db.mars.find_one()
