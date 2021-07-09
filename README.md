@@ -235,6 +235,143 @@ def hemisphere(browser):
 if __name__== "__main__":
     # If running as script, print scrapped data
     print(scrape_all())
+    
+   ### The Mongo database is updated to contain the full-resolution image URL and title for each hemisphere image.
+
+##### Mongo works well with python and Flask
+###### Flask is framework for developers that helps inbuildiing web apps
+###### import dependencies/libraries
+from flask import Flask, render_template, redirect, url_for
+from flask_pymongo import PyMongo
+import scraping
+
+##### let us set up flask
+app = Flask(__name__)
+
+
+#####lets tell python how to connect to mongo using PyMongo
+#####use flask_pymongo to set up mongo connection
+app.config["MONGO_URI"] = "mongodb://localhost:27017/mars_app"
+mongo = PyMongo(app)
+
+##### next we set up Flask route
+##### 1. for everyone to view when visiting the page--ourpage.com/
+##### 2. one for scraping---ourpage.com/scrape
+##### the routes will be embended in the webpage and accessed via links and buttons
+@app.route('/')
+def index():
+    mars = mongo.db.mars.find_one()
+    return render_template("index.html", mars=mars)
+ 
+@app.route("/scrape")
+def scrape():
+   mars = mongo.db.mars
+   mars_data = scraping.scrape_all()
+   mars.update({}, mars_data, upsert=True)
+   return redirect('/', code=302)
+ 
+   mars.update({}, mars_data, upsert=True)
+ 
+if __name__ == "__main__":
+   app.run()
+   
+#### The index.html file contains code that will display the full-resolution image URL and title for each hemisphere image.   
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Mission to Mars</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Add Jumbotron to Header -->
+      <div class="jumbotron text-center" style="background-image: url('https://wallpapercave.com/wp/wp2461878.jpg'); background-position: center; background-size: cover;height: 250px;">
+        <h1 style="color:white">Mission to Mars</h1>
+        <!-- Add a button to activate scraping script -->
+        <p><a class="btn btn-danger btn-xs" href="/scrape" role="button">Scrape New Data</a></p>
+      </div>
+
+      <!-- Add section for Mars News -->
+      <div class="row" id="mars-news">
+        <div class="col-md-12">
+          <div class="media">
+            <div class="media-body">
+              <h2>Latest Mars News</h2>
+              <h4 class="media-heading">{{ mars.news_title }}</h4>
+              <p>{{ mars.news_paragraph }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section for Featured Image and Facts table -->
+      <div class="row" id="mars-featured-image">
+        <div class="col-lg-8 col-md-8 col-sm-12">
+          <h2>Featured Mars Image</h2>
+          <!-- if images is False/None/non-existent, then default to error message -->
+          <img
+            src="{{mars.featured_image | default('static/images/error.png', true) }}"
+            class="img-responsive"
+            alt="Responsive image"
+          />
+        </div>
+
+        <div class="col-lg-4 col-md-4 col-sm-12">
+          <!-- Mars Facts -->
+          <div class="table" id="mars-facts">
+            <h4>Mars Facts</h4>
+            {{ mars.facts | safe }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Section for Mars Hemispheres -->
+      <div class="row" id="mars-hemispheres">
+        <div class="page-header">
+          <h2 class="text-center">Mars Hemispheres</h2>
+        </div>
+
+        {% for hemisphere in mars.hemispheres %}
+        <div class="col-md-6">
+          <div class="thumbnail">
+            <img src="{{hemisphere.img_url | default('static/images/error.png', true)}}" alt="Responsive image" class="img-responsive" >
+            <div class="caption">
+              <h3>{{hemisphere.title}}</h3>
+            </div>
+          </div>
+          
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>
+
+ #### After the scraping has been completed, the web app contains all the information from this module and the full-resolution images and titles for the four hemisphere images.
+
+![image](https://user-images.githubusercontent.com/57301554/125009178-9f8c8700-e029-11eb-8659-2845dbb6ebe3.png)
+
+#### Two additional Bootstrap 3 components are used to style the webpage.
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Mission to Mars</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+  </head>
+
+![image](https://user-images.githubusercontent.com/57301554/125009278-d793ca00-e029-11eb-98ff-7028d0a11bc4.png)
 
 
 
